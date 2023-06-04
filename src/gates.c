@@ -3,8 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-float training_data[][3] = {
-    // OR Gate
+float training_or[][3] = {
     { 0.0, 0.0, 0.0 },
     { 0.0, 1.0, 1.0 },
     { 1.0, 0.0, 1.0 },
@@ -25,14 +24,7 @@ float training_nand[][3] = {
     { 1.0, 1.0, 0.0 },
 };
 
-float training_xor[][3] = {
-    { 0.0, 0.0, 0.0 },
-    { 0.0, 1.0, 1.0 },
-    { 1.0, 0.0, 1.0 },
-    { 1.0, 1.0, 0.0 },
-};
-
-int n_training = sizeof(training_data) / sizeof(training_data[0]);
+int n_training = sizeof(training_or) / sizeof(training_or[0]);
 
 float randf(void)
 {
@@ -48,10 +40,10 @@ float cost(float w1, float w2, float b)
 {
     float sum = 0.0;
     for (int i = 0; i < n_training; i++) {
-        float x1 = training_xor[i][0];
-        float x2 = training_xor[i][1];
+        float x1 = training_or[i][0];
+        float x2 = training_or[i][1];
         float y = sigmoidf(x1 * w1 + x2 * w2 + b);
-        float d = y - training_xor[i][2];
+        float d = y - training_or[i][2];
         sum += d * d;
     }
     sum /= n_training;
@@ -88,7 +80,7 @@ int main()
 
     for (int x1 = 0; x1 < 2; x1++)
         for (int x2 = 0; x2 < 2; x2++)
-            printf("%d xor %d => %f\n", x1, x2, sigmoidf(x1 * w1 + x2 * w2 + b));
+            printf("%d | %d => %f\n", x1, x2, sigmoidf(x1 * w1 + x2 * w2 + b));
 
     return 0;
 }
