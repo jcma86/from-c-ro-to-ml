@@ -19,5 +19,5 @@ If you hate the awful experience of learning ML using Jupyter notebooks, then th
 ***Bitcoin***: bc1qhxz4t2vnktrd72k84cgpyv9agdgpjfg6gsnqvm  
 ***BUSD (BEP20)***: 0xaF074133BAB8fd29CCA0539f23e0E71b0193ccc7  
 
-***Binance***
-![Binance]()
+***Binance***:  
+<img src="https://github.com/jcma86/from-c-ro-to-ml/blob/main/assets/binance-qr.png" width="320px"/>
