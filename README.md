@@ -7,4 +7,5 @@ If you hate the awful experience of learning ML using Jupyter notebooks, then th
 <img style="float: left; margin: 3px 5px" src="https://img.uxwing.com/wp-content/themes/uxwing/download/brands-social-media/discord-round-color-icon.svg" width="15px"/>[Discord](https://discord.gg/eS29zCMrAZ)
 
 ## Videos
-1. A Simple Artificial Neuron [YouTube](https://youtu.be/ISkH0kJM85U) / [Rumble](https://rumble.com/v2s2ypo-a-simple-artificial-neuron-from-c-ro-to-ml-part-1.html)
+1. A Simple Artificial Neuron [YouTube](https://youtu.be/ISkH0kJM85U) / [Rumble](https://rumble.com/v2s2ypo-a-simple-artificial-neuron-from-c-ro-to-ml-part-1.html)  
+2. XOR Gate, Artificial Neural Network [YouTube](https://youtu.be/cXpuu0K6cbM) / [Rumble](https://rumble.com/v2sji1i-xor-gate-artificial-neural-network-from-c-ro-to-ml-part-2.html)  

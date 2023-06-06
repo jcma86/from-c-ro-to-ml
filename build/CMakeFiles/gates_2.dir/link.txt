@@ -1,0 +1,1 @@
+/usr/bin/clang -Wall -Wextra -Werror -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/gates_2.dir/src/gates_2.c.o -o gates_2  -lm 

@@ -1,0 +1,5 @@
+/Users/jose/Documents/projects/muxiphobia/ml/build/CMakeFiles/simple_neuron.dir
+/Users/jose/Documents/projects/muxiphobia/ml/build/CMakeFiles/gates.dir
+/Users/jose/Documents/projects/muxiphobia/ml/build/CMakeFiles/gates_2.dir
+/Users/jose/Documents/projects/muxiphobia/ml/build/CMakeFiles/edit_cache.dir
+/Users/jose/Documents/projects/muxiphobia/ml/build/CMakeFiles/rebuild_cache.dir
