@@ -12,7 +12,9 @@ If you hate the awful experience of learning ML using Jupyter notebooks, then th
 
 
 ## Donations
-[DonationAlerts](https://www.donationalerts.com/r/mokeyscode)  
+[<img src="https://vasyukov.net/upload/donate/donationalerts.png" width="30px"/>DonationAlerts](https://www.donationalerts.com/r/mokeyscode)  
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/L4L0M198I)  
 
 **Crypto**:  
 
