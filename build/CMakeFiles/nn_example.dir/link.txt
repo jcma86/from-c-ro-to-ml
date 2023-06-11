@@ -1,0 +1,1 @@
+/usr/bin/clang -Wall -Wextra -Werror -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/nn_example.dir/src/nn_example.c.o -o nn_example  -lm libnn.a -lm 

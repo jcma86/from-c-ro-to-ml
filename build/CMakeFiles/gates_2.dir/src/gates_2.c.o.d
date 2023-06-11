@@ -1,5 +1,5 @@
 CMakeFiles/gates_2.dir/src/gates_2.c.o: \
-  /Users/jose/Documents/projects/muxiphobia/ml/src/gates_2.c \
+  /Users/jose/Documents/projects/monkeyscode/ml/src/gates_2.c \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/math.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/sys/cdefs.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/sys/_symbol_aliasing.h \

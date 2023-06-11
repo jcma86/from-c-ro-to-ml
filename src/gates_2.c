@@ -180,29 +180,31 @@ int main()
     for (int i = 0; i < 100000; i++) {
         model dm = compute_deltas(m, eps);
         m = update_weights(m, dm, learning_rate);
-        printf("c: %f\n", cost(m));
+        printf("%f\n", cost(m));
+
+        // printf("c: %f\n", cost(m));
     }
 
-    printf("================\n");
-    printf("XOR\n");
-    for (int x1 = 0; x1 < 2; x1++)
-        for (int x2 = 0; x2 < 2; x2++)
-            printf("%d xor %d => %f\n", x1, x2, forward(m, x1, x2));
-    printf("================\n");
-    printf("Neuron A:\n");
-    for (int x1 = 0; x1 < 2; x1++)
-        for (int x2 = 0; x2 < 2; x2++)
-            printf("%d ? %d => %f\n", x1, x2, sigmoidf(x1 * m.a_w1 + x2 * m.a_w2 + m.a_b));
-    printf("================\n");
-    printf("Neuron B:\n");
-    for (int x1 = 0; x1 < 2; x1++)
-        for (int x2 = 0; x2 < 2; x2++)
-            printf("%d ? %d => %f\n", x1, x2, sigmoidf(x1 * m.b_w1 + x2 * m.b_w2 + m.b_b));
-    printf("================\n");
-    printf("Neuron C:\n");
-    for (int x1 = 0; x1 < 2; x1++)
-        for (int x2 = 0; x2 < 2; x2++)
-            printf("%d ? %d => %f\n", x1, x2, sigmoidf(x1 * m.c_w1 + x2 * m.c_w2 + m.c_b));
+    // printf("================\n");
+    // printf("XOR\n");
+    // for (int x1 = 0; x1 < 2; x1++)
+    //     for (int x2 = 0; x2 < 2; x2++)
+    //         printf("%d xor %d => %f\n", x1, x2, forward(m, x1, x2));
+    // printf("================\n");
+    // printf("Neuron A:\n");
+    // for (int x1 = 0; x1 < 2; x1++)
+    //     for (int x2 = 0; x2 < 2; x2++)
+    //         printf("%d ? %d => %f\n", x1, x2, sigmoidf(x1 * m.a_w1 + x2 * m.a_w2 + m.a_b));
+    // printf("================\n");
+    // printf("Neuron B:\n");
+    // for (int x1 = 0; x1 < 2; x1++)
+    //     for (int x2 = 0; x2 < 2; x2++)
+    //         printf("%d ? %d => %f\n", x1, x2, sigmoidf(x1 * m.b_w1 + x2 * m.b_w2 + m.b_b));
+    // printf("================\n");
+    // printf("Neuron C:\n");
+    // for (int x1 = 0; x1 < 2; x1++)
+    //     for (int x2 = 0; x2 < 2; x2++)
+    //         printf("%d ? %d => %f\n", x1, x2, sigmoidf(x1 * m.c_w1 + x2 * m.c_w2 + m.c_b));
 
     return 0;
 }

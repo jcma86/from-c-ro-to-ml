@@ -57,10 +57,10 @@ RM = /opt/local/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/jose/Documents/projects/muxiphobia/ml
+CMAKE_SOURCE_DIR = /Users/jose/Documents/projects/monkeyscode/ml
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/jose/Documents/projects/muxiphobia/ml/build
+CMAKE_BINARY_DIR = /Users/jose/Documents/projects/monkeyscode/ml/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/jose/Documents/projects/muxiphobia/ml/build/CMakeFiles /Users/jose/Documents/projects/muxiphobia/ml/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/jose/Documents/projects/monkeyscode/ml/build/CMakeFiles /Users/jose/Documents/projects/monkeyscode/ml/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/jose/Documents/projects/muxiphobia/ml/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/jose/Documents/projects/monkeyscode/ml/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -115,6 +115,19 @@ preinstall/fast:
 depend:
 	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
+
+#=============================================================================
+# Target rules for targets named nn
+
+# Build rule for target.
+nn: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 nn
+.PHONY : nn
+
+# fast build rule for target.
+nn/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nn.dir/build.make CMakeFiles/nn.dir/build
+.PHONY : nn/fast
 
 #=============================================================================
 # Target rules for targets named simple_neuron
@@ -154,6 +167,43 @@ gates_2: cmake_check_build_system
 gates_2/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gates_2.dir/build.make CMakeFiles/gates_2.dir/build
 .PHONY : gates_2/fast
+
+#=============================================================================
+# Target rules for targets named nn_example
+
+# Build rule for target.
+nn_example: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 nn_example
+.PHONY : nn_example
+
+# fast build rule for target.
+nn_example/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nn_example.dir/build.make CMakeFiles/nn_example.dir/build
+.PHONY : nn_example/fast
+
+libs/nn.o: libs/nn.c.o
+.PHONY : libs/nn.o
+
+# target to build an object file
+libs/nn.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nn.dir/build.make CMakeFiles/nn.dir/libs/nn.c.o
+.PHONY : libs/nn.c.o
+
+libs/nn.i: libs/nn.c.i
+.PHONY : libs/nn.i
+
+# target to preprocess a source file
+libs/nn.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nn.dir/build.make CMakeFiles/nn.dir/libs/nn.c.i
+.PHONY : libs/nn.c.i
+
+libs/nn.s: libs/nn.c.s
+.PHONY : libs/nn.s
+
+# target to generate assembly for a file
+libs/nn.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nn.dir/build.make CMakeFiles/nn.dir/libs/nn.c.s
+.PHONY : libs/nn.c.s
 
 src/gates.o: src/gates.c.o
 .PHONY : src/gates.o
@@ -203,6 +253,30 @@ src/gates_2.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gates_2.dir/build.make CMakeFiles/gates_2.dir/src/gates_2.c.s
 .PHONY : src/gates_2.c.s
 
+src/nn_example.o: src/nn_example.c.o
+.PHONY : src/nn_example.o
+
+# target to build an object file
+src/nn_example.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nn_example.dir/build.make CMakeFiles/nn_example.dir/src/nn_example.c.o
+.PHONY : src/nn_example.c.o
+
+src/nn_example.i: src/nn_example.c.i
+.PHONY : src/nn_example.i
+
+# target to preprocess a source file
+src/nn_example.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nn_example.dir/build.make CMakeFiles/nn_example.dir/src/nn_example.c.i
+.PHONY : src/nn_example.c.i
+
+src/nn_example.s: src/nn_example.c.s
+.PHONY : src/nn_example.s
+
+# target to generate assembly for a file
+src/nn_example.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/nn_example.dir/build.make CMakeFiles/nn_example.dir/src/nn_example.c.s
+.PHONY : src/nn_example.c.s
+
 src/simple_neuron.o: src/simple_neuron.c.o
 .PHONY : src/simple_neuron.o
 
@@ -237,13 +311,21 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... gates"
 	@echo "... gates_2"
+	@echo "... nn"
+	@echo "... nn_example"
 	@echo "... simple_neuron"
+	@echo "... libs/nn.o"
+	@echo "... libs/nn.i"
+	@echo "... libs/nn.s"
 	@echo "... src/gates.o"
 	@echo "... src/gates.i"
 	@echo "... src/gates.s"
 	@echo "... src/gates_2.o"
 	@echo "... src/gates_2.i"
 	@echo "... src/gates_2.s"
+	@echo "... src/nn_example.o"
+	@echo "... src/nn_example.i"
+	@echo "... src/nn_example.s"
 	@echo "... src/simple_neuron.o"
 	@echo "... src/simple_neuron.i"
 	@echo "... src/simple_neuron.s"

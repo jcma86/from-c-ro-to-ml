@@ -1,5 +1,5 @@
 CMakeFiles/simple_neuron.dir/src/simple_neuron.c.o: \
-  /Users/jose/Documents/projects/muxiphobia/ml/src/simple_neuron.c \
+  /Users/jose/Documents/projects/monkeyscode/ml/src/simple_neuron.c \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/stdio.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/_stdio.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/sys/cdefs.h \

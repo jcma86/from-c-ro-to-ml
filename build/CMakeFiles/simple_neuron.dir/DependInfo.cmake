@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/jose/Documents/projects/muxiphobia/ml/src/simple_neuron.c" "CMakeFiles/simple_neuron.dir/src/simple_neuron.c.o" "gcc" "CMakeFiles/simple_neuron.dir/src/simple_neuron.c.o.d"
+  "/Users/jose/Documents/projects/monkeyscode/ml/src/simple_neuron.c" "CMakeFiles/simple_neuron.dir/src/simple_neuron.c.o" "gcc" "CMakeFiles/simple_neuron.dir/src/simple_neuron.c.o.d"
   )
 
 # Targets to which this target links.

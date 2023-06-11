@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/jose/Documents/projects/muxiphobia/ml/src/gates_2.c" "CMakeFiles/gates_2.dir/src/gates_2.c.o" "gcc" "CMakeFiles/gates_2.dir/src/gates_2.c.o.d"
+  "/Users/jose/Documents/projects/monkeyscode/ml/src/gates_2.c" "CMakeFiles/gates_2.dir/src/gates_2.c.o" "gcc" "CMakeFiles/gates_2.dir/src/gates_2.c.o.d"
   )
 
 # Targets to which this target links.
