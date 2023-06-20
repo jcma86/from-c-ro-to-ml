@@ -10,6 +10,7 @@ If you hate the awful experience of learning ML using Jupyter notebooks, then th
 1. A Simple Artificial Neuron [YouTube](https://youtu.be/Q0B6iYefDgk) / [Rumble](https://rumble.com/v2s2ypo-a-simple-artificial-neuron-from-c-ro-to-ml-part-1.html)  
 2. XOR Gate, Artificial Neural Network [YouTube](https://youtu.be/KFYL8kaz67Y) / [Rumble](https://rumble.com/v2sji1i-xor-gate-artificial-neural-network-from-c-ro-to-ml-part-2.html)  
 3. A Neural Network Framework [YouTube](https://youtu.be/Q6h3xWQ-TS8) / [Rumble](https://rumble.com/v2tl41o-a-neural-network-framework-from-c-ro-to-ml-episode-3.html)  
+4. UI Framework in C - Visualizing Neural Networks [YouTube](https://youtu.be/abj2caALuts)  
 
 ## Donations
 [<img src="https://vasyukov.net/upload/donate/donationalerts.png" width="30px"/>DonationAlerts](https://www.donationalerts.com/r/mokeyscode)  

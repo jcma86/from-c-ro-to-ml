@@ -4,11 +4,14 @@ cmake_minimum_required(VERSION 3.0)
 set(CMAKE_C_COMPILER "/usr/bin/clang")
 set(CMAKE_C_FLAGS "-Wall -Wextra -Werror")
 
+find_package(glfw3 REQUIRED)
+find_package(raylib REQUIRED)
+
 set(NN_LIB libs/nn.c libs/nn.h)
 
 add_library(nn STATIC ${NN_LIB})
 
-target_link_libraries(nn m)
+target_link_libraries(nn m glfw raylib)
 
 add_executable(simple_neuron src/simple_neuron.c)
 add_executable(gates src/gates.c)
