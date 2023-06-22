@@ -113,9 +113,6 @@ void nn_update_params(NN nn, NN d);
 #ifndef NNUI_HEIGHT
 #define NNUI_HEIGHT 800
 #endif
-#ifndef NNUI_FPS
-#define NNUI_FPS 0 // 350
-#endif
 #ifndef NNUI_NEURON_RADIUS
 #define NNUI_NEURON_RADIUS 20
 #endif
@@ -142,8 +139,9 @@ typedef struct {
 } UI_NN;
 
 bool nnui_should_close();
+size_t nnui_get_current_example();
 void nnui_end();
-void nnui_init(NN nn);
+void nnui_init(NN nn, size_t n_examples, int fps);
 void nnui_render();
 void nnui_reset_cam();
 void nnui_add_point_to_chart(DATA_TYPE point);

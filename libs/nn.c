@@ -373,12 +373,17 @@ void nn_update_params(NN nn, NN nnd)
 
 // NN Visualizer
 char __nnui_ready__ = 0;
+int __fps__ = 15;
+size_t __current_example__ = 0;
+size_t __n_examples__ = 0;
 
 Camera2D __cam_main__ = { 0 };
 Camera2D __cam_graph__ = { 0 };
 Camera2D __cam_net_inputs__ = { 0 };
 Camera2D __cam_cost_chart__ = { 0 };
 Camera2D __cam_learning_rate__ = { 0 };
+Camera2D __cam_fps__ = { 0 };
+Camera2D __cam_example__ = { 0 };
 Camera2D __cam_neuron_info__ = { 0 };
 Camera2D __cam_neuron_iw_info__ = { 0 };
 
@@ -388,11 +393,17 @@ const int __left_panel_width__ = NNUI_WIDTH - __right_panel_width__;
 const int __inputs_panel_width__ = 320;
 const int __inputs_panel_height__ = 5.5 * NNUI_FONT_SIZE;
 const int __chart_panel_height__ = NNUI_HEIGHT / 2;
+const int __fps_panel_width__ = 200;
+const int __fps_bar_width__ = 180;
+const int __example_panel_width__ = 200;
+const int __example_bar_width__ = 180;
 Vector2 __cam_main_offset__ = (Vector2) { .x = 0.0, .y = 0.0 };
 Vector2 __cam_graph_offset__ = (Vector2) { .x = 0.0, .y = 0.0 };
 Vector2 __cam_net_inputs_offset__ = (Vector2) { .x = __left_panel_width__ - (__inputs_panel_width__ + __padding__), .y = 2 * __padding__ };
 Vector2 __cam_cost_chart_offset__ = (Vector2) { .x = __left_panel_width__, .y = 0.0 };
 Vector2 __cam_learning_rate_offset__ = (Vector2) { .x = __left_panel_width__ + (3 * __padding__), .y = __chart_panel_height__ - 50 };
+Vector2 __cam_fps_offset__ = (Vector2) { .x = 5 * __padding__, .y = 3 * __padding__ };
+Vector2 __cam_example_offset__ = (Vector2) { .x = __fps_panel_width__ + (25 * __padding__), .y = 3 * __padding__ };
 Vector2 __cam_neuron_info_offset__ = (Vector2) { .x = __left_panel_width__, .y = __chart_panel_height__ };
 Vector2 __cam_neuron_iw_info_offset__ = (Vector2) { .x = __left_panel_width__, .y = __chart_panel_height__ + (6 * NNUI_FONT_SIZE) };
 
@@ -407,6 +418,7 @@ Neuron __selected_neuron__ = (Neuron) { .layer = INT32_MAX };
 bool paused;
 bool nnui_should_close()
 {
+    assert(__nnui_ready__ == 1 && "You must initialize the render first => nnui_init(NN nn, size_t n_examples, int fps)");
     return WindowShouldClose();
 }
 
@@ -422,17 +434,27 @@ void nnui_end()
     }
 }
 
-void nnui_init(NN nn)
+size_t nnui_get_current_example()
+{
+    return __current_example__;
+}
+
+void nnui_init(NN nn, size_t n_examples, int fps)
 {
     InitWindow(NNUI_WIDTH, NNUI_HEIGHT, "Neural Network Visualizer");
-    if (NNUI_FPS > 0)
-        SetTargetFPS(NNUI_FPS);
+    __n_examples__ = n_examples - 1;
+    __fps__ = max(fps, 0);
+    __fps__ = __fps__ > 120 ? 0 : __fps__;
+
+    SetTargetFPS(__fps__);
 
     __cam_main__.offset = __cam_main_offset__;
     __cam_graph__.offset = __cam_graph_offset__;
     __cam_net_inputs__.offset = __cam_net_inputs_offset__;
     __cam_cost_chart__.offset = __cam_cost_chart_offset__;
     __cam_learning_rate__.offset = __cam_learning_rate_offset__;
+    __cam_fps__.offset = __cam_fps_offset__;
+    __cam_example__.offset = __cam_example_offset__;
     __cam_neuron_info__.offset = __cam_neuron_info_offset__;
     __cam_neuron_iw_info__.offset = __cam_neuron_iw_info_offset__;
 
@@ -441,6 +463,8 @@ void nnui_init(NN nn)
     __cam_net_inputs__.zoom = 1.0f;
     __cam_cost_chart__.zoom = 1.0f;
     __cam_learning_rate__.zoom = 1.0f;
+    __cam_fps__.zoom = 1.0f;
+    __cam_example__.zoom = 1.0f;
     __cam_neuron_info__.zoom = 1.0f;
     __cam_neuron_iw_info__.zoom = 1.0f;
 
@@ -487,8 +511,6 @@ void nnui_init(NN nn)
 
 void nnui_render_graph(Vector2 mouse_pos)
 {
-    DrawCircle(__left_panel_width__ / 2, NNUI_HEIGHT / 2, 2, BLACK);
-
     for (size_t l = 0; l < __nnui__.count; l++) {
         for (size_t n = 0; n < __nnui__.layers[l].count; n++) {
             Vector2 p = __nnui__.ui[l].coords[n];
@@ -519,8 +541,13 @@ void nnui_render_graph(Vector2 mouse_pos)
             } else {
                 if (l == 0)
                     DrawRectangle(p.x - NNUI_NEURON_RADIUS, p.y - NNUI_NEURON_RADIUS, 2 * NNUI_NEURON_RADIUS, 2 * NNUI_NEURON_RADIUS, GRAY);
-                else
-                    DrawCircle(p.x, p.y, NNUI_NEURON_RADIUS, BLUE);
+                else {
+                    float h = sigmoid(*(__nnui__.layers[l].neurons[n].o)) * 180.0f;
+                    h -= 60.0f;
+                    if (h < 0.0)
+                        h = 360.0 - h;
+                    DrawCircle(p.x, p.y, NNUI_NEURON_RADIUS, ColorFromHSV(h, 1.0, 1.0));
+                }
             }
 
             // Text in neuron
@@ -540,7 +567,6 @@ void nnui_render_graph(Vector2 mouse_pos)
                 for (size_t i = 0; i < __nnui__.layers[l - 1].count; i++) {
                     Vector2 pn = __nnui__.ui[l - 1].coords[i];
                     pn.x += NNUI_NEURON_RADIUS;
-
                     DrawLineEx(pn, p, min(__cam_graph__.zoom, 0.8), BLACK);
                 }
             }
@@ -549,11 +575,44 @@ void nnui_render_graph(Vector2 mouse_pos)
                 for (size_t i = 0; i < __nnui__.layers[l + 1].count; i++) {
                     Vector2 pn = __nnui__.ui[l + 1].coords[i];
                     pn.x -= NNUI_NEURON_RADIUS;
-                    DrawLineEx(pn, p, __cam_graph__.zoom, BLACK);
+                    // float h = sigmoid(MAT_AT(__nnui__.layers[l + 1].neurons[i].w, i, 0)) * 100.0f;
+                    DrawLineEx(pn, p, min(__cam_graph__.zoom, 0.8), BLACK);
                 }
             }
         }
     }
+    DrawCircle(__left_panel_width__ / 2, NNUI_HEIGHT / 2, 2, BLACK);
+}
+
+void nnui_render_example()
+{
+    char buffer[120];
+    DrawRectangle(-__padding__, -__padding__, __example_panel_width__, (2 * NNUI_FONT_SIZE) + __padding__, (Color) { 225, 225, 225, 180 });
+    snprintf(buffer, sizeof(buffer), "Example: %zu", __current_example__);
+    DrawText(buffer, 0, 0, NNUI_FONT_SIZE, BLACK);
+
+    float w = __example_bar_width__;
+    float y = 1.5 * NNUI_FONT_SIZE;
+    DrawLineEx((Vector2) { .x = 0, .y = y }, (Vector2) { .x = w, .y = y }, 2, BROWN);
+    float p = ((float)__current_example__ / __n_examples__) * w;
+    DrawCircle(p, y, 8, DARKGRAY);
+}
+
+void nnui_render_fps()
+{
+    char buffer[120];
+    DrawRectangle(-__padding__, -__padding__, __fps_panel_width__, (2 * NNUI_FONT_SIZE) + __padding__, (Color) { 225, 225, 225, 180 });
+    if (__fps__ == 0)
+        snprintf(buffer, sizeof(buffer), "FPS: %i", GetFPS());
+    else
+        snprintf(buffer, sizeof(buffer), "FPS: %i (real: %i)", __fps__, GetFPS());
+    DrawText(buffer, 0, 0, NNUI_FONT_SIZE, BLACK);
+
+    float w = __fps_bar_width__;
+    float y = 1.5 * NNUI_FONT_SIZE;
+    DrawLineEx((Vector2) { .x = 0, .y = y }, (Vector2) { .x = w, .y = y }, 2, BROWN);
+    float p = ((float)__fps__ / 120.0) * w;
+    DrawCircle(p, y, 8, DARKGRAY);
 }
 
 void nnui_render_net_inputs_info()
@@ -759,6 +818,10 @@ bool nnui_was_key_pressed(int key)
 
 void nnui_mouse_in_graph(Vector2 mousePos)
 {
+    if (mousePos.x >= __cam_fps_offset__.x && mousePos.x < 200
+        && mousePos.y >= __cam_fps_offset__.y && mousePos.y <= 2.5 * NNUI_FONT_SIZE)
+        return;
+
     if (mousePos.x >= __cam_net_inputs_offset__.x && mousePos.x < __cam_net_inputs_offset__.x + __inputs_panel_width__
         && mousePos.y >= __cam_net_inputs_offset__.y && mousePos.y <= __cam_net_inputs_offset__.y + __inputs_panel_height__)
         return;
@@ -826,17 +889,53 @@ void nnui_mouse_in_net_inputs(Vector2 mousePos)
     }
 }
 
-void nnui_mouse_in_learning_rate(Vector2 mousePos)
+void nnui_mouse_in_fps(Vector2 mousePos)
 {
-    float w = __right_panel_width__ - (6 * __padding__);
     if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         return;
 
+    float w = __fps_bar_width__;
+    Vector2 pos = GetScreenToWorld2D(mousePos, __cam_fps__);
+    if (mousePos.x >= __cam_fps_offset__.x && mousePos.x < __cam_fps_offset__.x + w
+        && mousePos.y >= __cam_fps_offset__.y + NNUI_FONT_SIZE && mousePos.y <= __cam_fps_offset__.y + (2 * NNUI_FONT_SIZE))
+        __fps__ = (pos.x / w) * 120;
+    else if (pos.x < 0)
+        __fps__ = 0;
+    else if (pos.x > w && pos.x < __fps_panel_width__)
+        __fps__ = 120;
+
+    SetTargetFPS(__fps__);
+}
+
+void nnui_mouse_in_example(Vector2 mousePos)
+{
+    if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+        return;
+
+    float w = __example_bar_width__;
+    Vector2 pos = GetScreenToWorld2D(mousePos, __cam_example__);
+    if (mousePos.x >= __cam_example_offset__.x && mousePos.x < __cam_example_offset__.x + w
+        && mousePos.y >= __cam_example_offset__.y + NNUI_FONT_SIZE && mousePos.y <= __cam_example_offset__.y + (2 * NNUI_FONT_SIZE))
+        __current_example__ = (pos.x / w) * __n_examples__;
+    else if (pos.x < 0)
+        __current_example__ = 0;
+    else if (pos.x > w && pos.x < __example_panel_width__)
+        __current_example__ = __n_examples__;
+
+    SetTargetFPS(__fps__);
+}
+
+void nnui_mouse_in_learning_rate(Vector2 mousePos)
+{
+    if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+        return;
+
+    float w = __right_panel_width__ - (6 * __padding__);
     Vector2 pos = GetScreenToWorld2D(mousePos, __cam_learning_rate__);
     if (mousePos.x >= __cam_learning_rate_offset__.x && mousePos.x < __cam_learning_rate_offset__.x + w
         && mousePos.y >= __cam_learning_rate_offset__.y + 20 && mousePos.y <= __cam_learning_rate_offset__.y + 45)
         *__nnui__.lr = pos.x / w;
-    else if (pos.x < 0)
+    else if (pos.x < 0 && pos.x > -10)
         *__nnui__.lr = 0.0f;
     else if (pos.x > w)
         *__nnui__.lr = 1.0f;
@@ -844,12 +943,14 @@ void nnui_mouse_in_learning_rate(Vector2 mousePos)
 
 void nnui_render()
 {
-    assert(__nnui_ready__ == 1);
+    assert(__nnui_ready__ == 1 && "You must initialize the render first => nnui_init(NN nn, size_t n_examples, int fps)");
 
     Vector2 mousePos = GetMousePosition();
     nnui_mouse_in_graph(mousePos);
     nnui_mouse_in_net_inputs(mousePos);
     nnui_mouse_in_neuron_iw(mousePos);
+    nnui_mouse_in_fps(mousePos);
+    nnui_mouse_in_example(mousePos);
     nnui_mouse_in_learning_rate(mousePos);
 
     if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT))
@@ -900,6 +1001,14 @@ void nnui_render()
     DrawRectangle(__cam_net_inputs_offset__.x, __cam_net_inputs_offset__.y, __inputs_panel_width__, NNUI_FONT_SIZE + (2 * __padding__), LIGHTGRAY);
     DrawText("Inputs", __cam_net_inputs_offset__.x + (2 * NNUI_FONT_SIZE), __cam_net_inputs_offset__.y + __padding__, NNUI_FONT_SIZE, BLACK);
     DrawText("Outputs", __cam_net_inputs_offset__.x + (__inputs_panel_width__ / 2) + NNUI_FONT_SIZE, __cam_net_inputs_offset__.y + __padding__, NNUI_FONT_SIZE, BLACK);
+
+    BeginMode2D(__cam_fps__);
+    nnui_render_fps();
+    EndMode2D();
+
+    BeginMode2D(__cam_example__);
+    nnui_render_example();
+    EndMode2D();
 
     BeginMode2D(__cam_learning_rate__);
     nnui_render_learning_rate();
