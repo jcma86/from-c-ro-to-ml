@@ -146,5 +146,6 @@ void nnui_render();
 void nnui_reset_cam();
 void nnui_add_point_to_chart(DATA_TYPE point);
 bool nnui_was_key_pressed(int key);
+void nnui_set_status_message(char message[256]);
 
 #endif

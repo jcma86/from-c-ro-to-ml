@@ -53,6 +53,7 @@ int main()
     nnui_init(nn, m_in.rows, 20);
     bool paused = false;
     size_t batch_size = 1;
+    nnui_set_status_message(paused ? "Training paused..." : "Training!");
     while (!nnui_should_close()) {
         if (!paused) {
             for (size_t ex = 0; ex < m_in.rows; ex += batch_size) {
@@ -66,8 +67,10 @@ int main()
         nnui_render();
         if (nnui_was_key_pressed(KEY_R))
             nnui_reset_cam();
-        if (nnui_was_key_pressed(KEY_P))
+        if (nnui_was_key_pressed(KEY_P)) {
             paused = !paused;
+            nnui_set_status_message(paused ? "Training paused..." : "Training!");
+        }
 
         if (!paused)
             nnui_add_point_to_chart(*nn.cost);

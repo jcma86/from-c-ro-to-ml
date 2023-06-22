@@ -374,6 +374,7 @@ void nn_update_params(NN nn, NN nnd)
 // NN Visualizer
 char __nnui_ready__ = 0;
 int __fps__ = 15;
+char __status__[256];
 size_t __current_example__ = 0;
 size_t __n_examples__ = 0;
 
@@ -386,6 +387,7 @@ Camera2D __cam_fps__ = { 0 };
 Camera2D __cam_example__ = { 0 };
 Camera2D __cam_neuron_info__ = { 0 };
 Camera2D __cam_neuron_iw_info__ = { 0 };
+Camera2D __cam_status_bar__ = { 0 };
 
 const int __padding__ = 5;
 const int __right_panel_width__ = 350;
@@ -406,6 +408,7 @@ Vector2 __cam_fps_offset__ = (Vector2) { .x = 5 * __padding__, .y = 3 * __paddin
 Vector2 __cam_example_offset__ = (Vector2) { .x = __fps_panel_width__ + (25 * __padding__), .y = 3 * __padding__ };
 Vector2 __cam_neuron_info_offset__ = (Vector2) { .x = __left_panel_width__, .y = __chart_panel_height__ };
 Vector2 __cam_neuron_iw_info_offset__ = (Vector2) { .x = __left_panel_width__, .y = __chart_panel_height__ + (6 * NNUI_FONT_SIZE) };
+Vector2 __cam_status_bar_offset__ = (Vector2) { .x = __padding__, .y = NNUI_HEIGHT - __padding__ - NNUI_FONT_SIZE };
 
 DATA_TYPE __cost_points__[NNUI_COST_CHART_POINTS];
 float __max_cost__ = -INT32_MAX;
@@ -448,6 +451,8 @@ void nnui_init(NN nn, size_t n_examples, int fps)
 
     SetTargetFPS(__fps__);
 
+    snprintf(__status__, sizeof(__status__), "NN Visualizer Tool v0.1");
+
     __cam_main__.offset = __cam_main_offset__;
     __cam_graph__.offset = __cam_graph_offset__;
     __cam_net_inputs__.offset = __cam_net_inputs_offset__;
@@ -457,6 +462,7 @@ void nnui_init(NN nn, size_t n_examples, int fps)
     __cam_example__.offset = __cam_example_offset__;
     __cam_neuron_info__.offset = __cam_neuron_info_offset__;
     __cam_neuron_iw_info__.offset = __cam_neuron_iw_info_offset__;
+    __cam_status_bar__.offset = __cam_status_bar_offset__;
 
     __cam_main__.zoom = 1.0f;
     __cam_graph__.zoom = 1.0f;
@@ -467,6 +473,7 @@ void nnui_init(NN nn, size_t n_examples, int fps)
     __cam_example__.zoom = 1.0f;
     __cam_neuron_info__.zoom = 1.0f;
     __cam_neuron_iw_info__.zoom = 1.0f;
+    __cam_status_bar__.zoom = 1.0f;
 
     __nnui__.count = nn.count + 1;
     __nnui__.lr = nn.lr;
@@ -804,6 +811,17 @@ void nnui_render_neuron_iw_info()
     }
 }
 
+void nnui_set_status_message(char message[256])
+{
+    snprintf(__status__, sizeof(__status__), "%s", message);
+}
+
+void nnui_render_status_bar()
+{
+    DrawRectangle(0, 0, __left_panel_width__ - (__padding__), NNUI_FONT_SIZE + __padding__, LIGHTGRAY);
+    DrawText(__status__, __padding__, __padding__, 0.75 * NNUI_FONT_SIZE, BLACK);
+}
+
 void nnui_reset_cam()
 {
     __cam_graph__.zoom = 1.0f;
@@ -1012,6 +1030,10 @@ void nnui_render()
 
     BeginMode2D(__cam_learning_rate__);
     nnui_render_learning_rate();
+    EndMode2D();
+
+    BeginMode2D(__cam_status_bar__);
+    nnui_render_status_bar();
     EndMode2D();
 
     DrawRectangle(__left_panel_width__ - (__padding__ / 2), 0, __padding__, NNUI_HEIGHT, LIGHTGRAY);
