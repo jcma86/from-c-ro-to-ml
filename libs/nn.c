@@ -574,18 +574,22 @@ void nnui_render_graph(Vector2 mouse_pos)
                 for (size_t i = 0; i < __nnui__.layers[l - 1].count; i++) {
                     Vector2 pn = __nnui__.ui[l - 1].coords[i];
                     pn.x += NNUI_NEURON_RADIUS;
-                    DrawLineEx(pn, p, min(__cam_graph__.zoom, 0.8), BLACK);
+                    float h = sigmoid(MAT_AT(__nnui__.layers[l].neurons[n].w, i, 0)) * 180.0f;
+                    h -= 60.0f;
+                    if (h < 0.0)
+                        h = 360.0 - h;
+                    DrawLineEx(pn, p, min(__cam_graph__.zoom, 0.8), ColorFromHSV(h, 1.0, 1.0));
                 }
             }
-            if (l < __nnui__.count - 1) {
-                p.x += l == 0 ? NNUI_NEURON_RADIUS : 2 * NNUI_NEURON_RADIUS;
-                for (size_t i = 0; i < __nnui__.layers[l + 1].count; i++) {
-                    Vector2 pn = __nnui__.ui[l + 1].coords[i];
-                    pn.x -= NNUI_NEURON_RADIUS;
-                    // float h = sigmoid(MAT_AT(__nnui__.layers[l + 1].neurons[i].w, i, 0)) * 100.0f;
-                    DrawLineEx(pn, p, min(__cam_graph__.zoom, 0.8), BLACK);
-                }
-            }
+            // if (l < __nnui__.count - 1) {
+            //     p.x += l == 0 ? NNUI_NEURON_RADIUS : 2 * NNUI_NEURON_RADIUS;
+            //     for (size_t i = 0; i < __nnui__.layers[l + 1].count; i++) {
+            //         Vector2 pn = __nnui__.ui[l + 1].coords[i];
+            //         pn.x -= NNUI_NEURON_RADIUS;
+            //         // float h = sigmoid(MAT_AT(__nnui__.layers[l + 1].neurons[i].w, i, 0)) * 100.0f;
+            //         DrawLineEx(pn, p, min(__cam_graph__.zoom, 0.8), BLACK);
+            //     }
+            // }
         }
     }
     DrawCircle(__left_panel_width__ / 2, NNUI_HEIGHT / 2, 2, BLACK);
@@ -594,7 +598,7 @@ void nnui_render_graph(Vector2 mouse_pos)
 void nnui_render_example()
 {
     char buffer[120];
-    DrawRectangle(-__padding__, -__padding__, __example_panel_width__, (2 * NNUI_FONT_SIZE) + __padding__, (Color) { 225, 225, 225, 180 });
+    DrawRectangle(-2 * __padding__, -__padding__, __example_panel_width__, (2 * NNUI_FONT_SIZE) + (2 * __padding__), (Color) { 225, 225, 225, 180 });
     snprintf(buffer, sizeof(buffer), "Example: %zu", __current_example__);
     DrawText(buffer, 0, 0, NNUI_FONT_SIZE, BLACK);
 
@@ -608,7 +612,7 @@ void nnui_render_example()
 void nnui_render_fps()
 {
     char buffer[120];
-    DrawRectangle(-__padding__, -__padding__, __fps_panel_width__, (2 * NNUI_FONT_SIZE) + __padding__, (Color) { 225, 225, 225, 180 });
+    DrawRectangle(-2 * __padding__, -__padding__, __fps_panel_width__, (2 * NNUI_FONT_SIZE) + (2 * __padding__), (Color) { 225, 225, 225, 180 });
     if (__fps__ == 0)
         snprintf(buffer, sizeof(buffer), "FPS: %i", GetFPS());
     else
@@ -977,7 +981,7 @@ void nnui_render()
     BeginDrawing();
     ClearBackground(LIGHTGRAY);
 
-    DrawRectangle(__padding__, __padding__, NNUI_WIDTH - (2 * __padding__), NNUI_HEIGHT - (2 * __padding__), RAYWHITE);
+    DrawRectangle(__padding__, __padding__, NNUI_WIDTH - (2 * __padding__), NNUI_HEIGHT - (2 * __padding__), (Color) { 45, 45, 45, 255 });
 
     BeginMode2D(__cam_graph__);
     nnui_render_graph(mousePos);

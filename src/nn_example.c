@@ -41,7 +41,7 @@ int main()
     MAT_PRINT(m_in);
     MAT_PRINT(m_out);
 
-    size_t layers[] = { m_in.cols, 7, 2, m_out.cols };
+    size_t layers[] = { m_in.cols, 2, m_out.cols };
     size_t n_layers = ARRAY_SIZE(layers);
     DATA_TYPE eps = 0.001;
     DATA_TYPE learning_rate = 0.1;
@@ -50,7 +50,7 @@ int main()
     NN nnd = nn_create(layers, n_layers, learning_rate);
     nn_rand(nn, -1.0, 1.0);
 
-    nnui_init(nn, m_in.rows, 20);
+    nnui_init(nn, m_in.rows, 0);
     bool paused = false;
     size_t batch_size = 1;
     nnui_set_status_message(paused ? "Training paused..." : "Training!");
