@@ -57,12 +57,13 @@ void mat_rand(Mat m, DATA_TYPE min, DATA_TYPE max);
 void mat_set(Mat m, DATA_TYPE value);
 void mat_mult(Mat dst, Mat a, Mat b);
 void mat_sum(Mat dst, Mat b);
-void mat_act(Mat m);
+void mat_act(Mat m, ActivationFx act);
+void mat_derivative(Mat m, ActivationFx act);
 void mat_print(Mat m, char* id);
 
 // NN
 #define NN_INPUT(nn) (nn).o[0]
-#define NN_OUTPUT(nn) (nn).o[(nn).count]
+#define NN_OUTPUT(nn) (nn).o[(nn).n_layers - 1]
 
 typedef enum {
     NN_LAYER_INPUT,
@@ -87,22 +88,26 @@ typedef struct {
 } Layer;
 
 typedef struct {
-    size_t count;
+    size_t n_layers;
     DATA_TYPE* cost;
     DATA_TYPE* lr;
     Mat* w;
     Mat* b;
     Mat* o;
+    ActivationFx* act_fx;
 } NN;
 
 void nn_destroy(NN nn);
 NN nn_create(size_t* layers, size_t count, DATA_TYPE learning_rate);
+void nn_set_act_fx(NN nn, size_t layer, ActivationFx fx);
 Neuron nn_get_neuron(NN nn, size_t layer, size_t n);
 Layer nn_get_layer(NN nn, size_t index);
+void nn_zero(NN nn);
 void nn_rand(NN nn, DATA_TYPE min, DATA_TYPE max);
 void nn_forward(NN nn);
 DATA_TYPE nn_cost(NN nn, Mat m_in, Mat m_out, size_t initial_example, size_t batch_size);
 void nn_finite_diff(NN nn, NN d, Mat m_in, Mat m_out, size_t initial_example, size_t batch_size, DATA_TYPE eps);
+void nn_backprop(NN nn, NN nnd, Mat m_in, Mat m_out, size_t initial_example, size_t batch_size);
 
 void nn_update_params(NN nn, NN d);
 
@@ -124,7 +129,7 @@ void nn_update_params(NN nn, NN d);
 #endif
 
 #ifndef NNUI_COST_CHART_POINTS
-#define NNUI_COST_CHART_POINTS 1200
+#define NNUI_COST_CHART_POINTS 5000
 #endif
 
 typedef struct {

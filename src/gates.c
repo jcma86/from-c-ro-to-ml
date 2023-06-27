@@ -24,7 +24,7 @@ float training_nand[][3] = {
     { 1.0, 1.0, 0.0 },
 };
 
-int n_training = sizeof(training_or) / sizeof(training_or[0]);
+int n_training = sizeof(training_and) / sizeof(training_and[0]);
 
 float randf(void)
 {
@@ -40,10 +40,10 @@ float cost(float w1, float w2, float b)
 {
     float sum = 0.0;
     for (int i = 0; i < n_training; i++) {
-        float x1 = training_or[i][0];
-        float x2 = training_or[i][1];
+        float x1 = training_and[i][0];
+        float x2 = training_and[i][1];
         float y = sigmoidf(x1 * w1 + x2 * w2 + b);
-        float d = y - training_or[i][2];
+        float d = y - training_and[i][2];
         sum += d * d;
     }
     sum /= n_training;
@@ -51,11 +51,32 @@ float cost(float w1, float w2, float b)
     return sum;
 }
 
+void derivative_cost(float w1, float w2, float b, float* dw1, float* dw2, float* db)
+{
+    *dw1 = 0;
+    *dw2 = 0;
+    *db = 0;
+    for (int i = 0; i < n_training; i++) {
+        float x1 = training_and[i][0];
+        float x2 = training_and[i][1];
+        float y = training_and[i][2];
+        float z = (x1 * w1) + (x2 * w2) + b;
+        float sig = sigmoidf(z);
+
+        *dw1 += 2 * (sig - y) * (sig * (1 - sig)) * x1;
+        *dw2 += 2 * (sig - y) * (sig * (1 - sig)) * x2;
+        *db += 2 * (sig - y) * (sig * (1 - sig));
+    }
+    *dw1 /= n_training;
+    *dw2 /= n_training;
+    *db /= n_training;
+}
+
 int main()
 {
     srand(25);
     // srand(time(0));
-    float eps = 1e-3;
+    // float eps = 1e-3;
     float learning_rate = 1e-1;
 
     float w1 = randf();
@@ -67,10 +88,10 @@ int main()
     b = randf();
 
     for (int i = 0; i < 100000; i++) {
-        float c = cost(w1, w2, b);
-        float dw1 = (cost(w1 + eps, w2, b) - c) / eps;
-        float dw2 = (cost(w1, w2 + eps, b) - c) / eps;
-        float db = (cost(w1, w2, b + eps) - c) / eps;
+        float dw1;
+        float dw2;
+        float db;
+        derivative_cost(w1, w2, b, &dw1, &dw2, &db);
         w1 -= learning_rate * dw1;
         w2 -= learning_rate * dw2;
         b -= learning_rate * db;

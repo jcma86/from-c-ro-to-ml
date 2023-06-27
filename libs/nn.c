@@ -43,6 +43,20 @@ DATA_TYPE activation_handler(DATA_TYPE x, ActivationFx act)
     return 0.0;
 }
 
+DATA_TYPE derivative_handler(DATA_TYPE x, ActivationFx act)
+{
+    switch (act) {
+    case ACTFX_LINEAR:
+        return 1;
+    case ACTFX_SIGM:
+        return x * (1 - x);
+    }
+
+    assert(0 && "Activation function not defined.");
+
+    return 0.0;
+}
+
 DATA_TYPE randv()
 {
     return (DATA_TYPE)rand() / (DATA_TYPE)RAND_MAX;
@@ -150,11 +164,20 @@ void mat_sum(Mat dst, Mat b)
     }
 }
 
-void mat_act(Mat m)
+void mat_act(Mat m, ActivationFx act)
 {
     for (size_t r = 0; r < m.rows; r++) {
         for (size_t c = 0; c < m.cols; c++) {
-            MAT_AT(m, r, c) = activation_handler(MAT_AT(m, r, c), ACTFX_SIGM);
+            MAT_AT(m, r, c) = activation_handler(MAT_AT(m, r, c), act);
+        }
+    }
+}
+
+void mat_derivative(Mat m, ActivationFx act)
+{
+    for (size_t r = 0; r < m.rows; r++) {
+        for (size_t c = 0; c < m.cols; c++) {
+            MAT_AT(m, r, c) = derivative_handler(MAT_AT(m, r, c), act);
         }
     }
 }
@@ -178,22 +201,26 @@ void mat_print(Mat m, char* id)
 void nn_destroy(NN nn)
 {
     if (nn.b != NULL) {
-        for (size_t i = 0; i < nn.count; i++)
+        for (size_t i = 0; i < nn.n_layers - 1; i++)
             mat_destroy(nn.b[i]);
         free(nn.b);
         nn.b = NULL;
     }
     if (nn.w != NULL) {
-        for (size_t i = 0; i < nn.count; i++)
+        for (size_t i = 0; i < nn.n_layers - 1; i++)
             mat_destroy(nn.w[i]);
         free(nn.w);
         nn.w = NULL;
     }
     if (nn.o != NULL) {
-        for (size_t i = 0; i < nn.count + 1; i++)
+        for (size_t i = 0; i < nn.n_layers; i++)
             mat_destroy(nn.o[i]);
         free(nn.o);
         nn.o = NULL;
+    }
+    if (nn.act_fx != NULL) {
+        free(nn.act_fx);
+        nn.act_fx = NULL;
     }
     if (nn.cost != NULL) {
         free(nn.cost);
@@ -205,19 +232,20 @@ void nn_destroy(NN nn)
     }
 }
 
-// NN => XOR {2, 2, 1} (2 Ins, 2 Hidden Neu, 1 Out)
 NN nn_create(size_t* layers, size_t count, DATA_TYPE learning_rate)
 {
     assert(count > 0);
 
     NN nn;
-    nn.count = count - 1;
+    nn.n_layers = count;
 
-    nn.w = malloc(sizeof(Mat) * nn.count);
+    nn.w = malloc(sizeof(Mat) * (nn.n_layers - 1));
     assert(nn.w != NULL);
-    nn.b = malloc(sizeof(Mat) * nn.count);
+    nn.b = malloc(sizeof(Mat) * (nn.n_layers - 1));
     assert(nn.b != NULL);
-    nn.o = malloc(sizeof(Mat) * count);
+    nn.act_fx = malloc(sizeof(Mat) * (nn.n_layers - 1));
+    assert(nn.act_fx != NULL);
+    nn.o = malloc(sizeof(Mat) * nn.n_layers);
     assert(nn.o != NULL);
 
     nn.cost = malloc(sizeof(DATA_TYPE));
@@ -227,18 +255,25 @@ NN nn_create(size_t* layers, size_t count, DATA_TYPE learning_rate)
 
     nn.o[0] = mat_create(1, layers[0]);
     mat_set(nn.o[0], 0);
-    for (size_t i = 1; i < count; i++) {
+    for (size_t i = 1; i < nn.n_layers; i++) {
         nn.w[i - 1] = mat_create(layers[i - 1], layers[i]);
         nn.b[i - 1] = mat_create(1, layers[i]);
+        nn.act_fx[i - 1] = ACTFX_SIGM;
         nn.o[i] = mat_create(1, layers[i]);
     }
 
     return nn;
 }
 
+void nn_set_act_fx(NN nn, size_t layer, ActivationFx fx)
+{
+    assert(layer > 0 && layer < nn.n_layers);
+    nn.act_fx[layer - 1] = fx;
+}
+
 Neuron nn_get_neuron(NN nn, size_t layer, size_t index)
 {
-    assert(layer <= nn.count);
+    assert(layer < nn.n_layers);
     assert(index < nn.o[layer].cols);
 
     Neuron n;
@@ -256,7 +291,7 @@ Neuron nn_get_neuron(NN nn, size_t layer, size_t index)
 
 Layer nn_get_layer(NN nn, size_t index)
 {
-    assert(index <= nn.count);
+    assert(index < nn.n_layers);
 
     Layer l;
     l.layer = index;
@@ -269,7 +304,7 @@ Layer nn_get_layer(NN nn, size_t index)
 
     if (index == 0)
         l.type = NN_LAYER_INPUT;
-    else if (index == nn.count)
+    else if (index == nn.n_layers)
         l.type = NN_LAYER_OUTPUT;
     else
         l.type = NN_LAYER_HIDDEN;
@@ -285,9 +320,19 @@ void nn_free_layer(Layer l)
     }
 }
 
+void nn_zero(NN nn)
+{
+    mat_set(nn.o[nn.n_layers - 1], (DATA_TYPE)0);
+    for (size_t i = 0; i < nn.n_layers - 1; i++) {
+        mat_set(nn.w[i], (DATA_TYPE)0);
+        mat_set(nn.b[i], (DATA_TYPE)0);
+        mat_set(nn.o[i], (DATA_TYPE)0);
+    }
+}
+
 void nn_rand(NN nn, DATA_TYPE min, DATA_TYPE max)
 {
-    for (size_t i = 0; i < nn.count; i++) {
+    for (size_t i = 0; i < nn.n_layers - 1; i++) {
         mat_rand(nn.w[i], min, max);
         mat_rand(nn.b[i], min, max);
     }
@@ -295,10 +340,10 @@ void nn_rand(NN nn, DATA_TYPE min, DATA_TYPE max)
 
 void nn_forward(NN nn)
 {
-    for (size_t i = 0; i < nn.count; i++) {
+    for (size_t i = 0; i < nn.n_layers - 1; i++) {
         mat_mult(nn.o[i + 1], nn.o[i], nn.w[i]);
         mat_sum(nn.o[i + 1], nn.b[i]);
-        mat_act(nn.o[i + 1]);
+        mat_act(nn.o[i + 1], nn.act_fx[i]);
     }
 }
 
@@ -331,7 +376,7 @@ void nn_finite_diff(NN nn, NN nnd, Mat m_in, Mat m_out, size_t initial_example, 
     DATA_TYPE tmp;
     DATA_TYPE cc = nn_cost(nn, m_in, m_out, initial_example, batch_size);
 
-    for (size_t i = 0; i < nn.count; i++) {
+    for (size_t i = 0; i < nn.n_layers - 1; i++) {
         for (size_t r = 0; r < nn.w[i].rows; r++) {
             for (size_t c = 0; c < nn.w[i].cols; c++) {
                 tmp = MAT_AT(nn.w[i], r, c);
@@ -354,9 +399,60 @@ void nn_finite_diff(NN nn, NN nnd, Mat m_in, Mat m_out, size_t initial_example, 
     *nn.cost = cc;
 }
 
+void nn_backprop(NN nn, NN nnd, Mat m_in, Mat m_out, size_t initial_example, size_t batch_size)
+{
+    nn_zero(nnd);
+    DATA_TYPE cost = 0.0;
+    for (size_t i = initial_example; i < (initial_example + batch_size); i++) {
+        mat_cpy(NN_INPUT(nn), mat_row(m_in, i));
+        nn_forward(nn);
+
+        for (size_t j = 0; j < nn.n_layers; j++)
+            mat_set(nnd.o[j], 0.0);
+
+        for (size_t j = 0; j < m_out.cols; j++) {
+            DATA_TYPE dif = MAT_AT(NN_OUTPUT(nn), 0, j) - MAT_AT(m_out, i, j);
+            MAT_AT(NN_OUTPUT(nnd), 0, j) = 2 * (dif);
+            cost += dif * dif;
+        }
+
+        for (size_t l = nn.n_layers - 1; l > 0; l--) {
+            for (size_t j = 0; j < nn.o[l].cols; j++) {
+                DATA_TYPE a = MAT_AT(nn.o[l], 0, j);
+                DATA_TYPE dc = MAT_AT(nnd.o[l], 0, j);
+                DATA_TYPE da = derivative_handler(a, nn.act_fx[l - 1]);
+                MAT_AT(nnd.b[l - 1], 0, j) += dc * da;
+
+                for (size_t k = 0; k < nn.o[l - 1].cols; k++) {
+                    DATA_TYPE pa = MAT_AT(nn.o[l - 1], 0, k);
+                    DATA_TYPE w = MAT_AT(nn.w[l - 1], k, j);
+
+                    MAT_AT(nnd.w[l - 1], k, j) += dc * da * pa;
+                    MAT_AT(nnd.o[l - 1], 0, k) += dc * da * w;
+                }
+            }
+        }
+    }
+
+    for (size_t i = 0; i < nnd.n_layers - 1; i++) {
+        for (size_t j = 0; j < nnd.w[i].rows; j++) {
+            for (size_t k = 0; k < nnd.w[i].cols; k++) {
+                MAT_AT(nnd.w[i], j, k) /= batch_size;
+            }
+        }
+        for (size_t j = 0; j < nnd.b[i].rows; j++) {
+            for (size_t k = 0; k < nnd.b[i].cols; k++) {
+                MAT_AT(nnd.b[i], j, k) /= batch_size;
+            }
+        }
+    }
+
+    *nn.cost = cost / batch_size;
+}
+
 void nn_update_params(NN nn, NN nnd)
 {
-    for (size_t i = 0; i < nn.count; i++) {
+    for (size_t i = 0; i < nn.n_layers - 1; i++) {
         for (size_t r = 0; r < nn.w[i].rows; r++) {
             for (size_t c = 0; c < nn.w[i].cols; c++) {
                 MAT_AT(nn.w[i], r, c) -= (*nn.lr) * MAT_AT(nnd.w[i], r, c);
@@ -475,12 +571,12 @@ void nnui_init(NN nn, size_t n_examples, int fps)
     __cam_neuron_iw_info__.zoom = 1.0f;
     __cam_status_bar__.zoom = 1.0f;
 
-    __nnui__.count = nn.count + 1;
+    __nnui__.count = nn.n_layers;
     __nnui__.lr = nn.lr;
     __nnui__.layers = malloc(sizeof(Layer) * __nnui__.count);
     assert(__nnui__.layers != NULL);
 
-    for (size_t l = 0; l <= nn.count; l++)
+    for (size_t l = 0; l < nn.n_layers; l++)
         __nnui__.layers[l] = nn_get_layer(nn, l);
 
     __nnui__.ui = malloc(sizeof(UI_Layer) * __nnui__.count);
@@ -581,15 +677,6 @@ void nnui_render_graph(Vector2 mouse_pos)
                     DrawLineEx(pn, p, min(__cam_graph__.zoom, 0.8), ColorFromHSV(h, 1.0, 1.0));
                 }
             }
-            // if (l < __nnui__.count - 1) {
-            //     p.x += l == 0 ? NNUI_NEURON_RADIUS : 2 * NNUI_NEURON_RADIUS;
-            //     for (size_t i = 0; i < __nnui__.layers[l + 1].count; i++) {
-            //         Vector2 pn = __nnui__.ui[l + 1].coords[i];
-            //         pn.x -= NNUI_NEURON_RADIUS;
-            //         // float h = sigmoid(MAT_AT(__nnui__.layers[l + 1].neurons[i].w, i, 0)) * 100.0f;
-            //         DrawLineEx(pn, p, min(__cam_graph__.zoom, 0.8), BLACK);
-            //     }
-            // }
         }
     }
     DrawCircle(__left_panel_width__ / 2, NNUI_HEIGHT / 2, 2, BLACK);
@@ -660,6 +747,11 @@ void nnui_render_net_inputs_info()
             continue;
         if (p.y + (NNUI_FONT_SIZE / 2) > __inputs_panel_height__)
             break;
+
+        if (i >= __nnui__.layers[0].count) {
+            snprintf(buffer, sizeof(buffer), "%zu", i);
+            DrawText(buffer, __padding__, y + NNUI_FONT_SIZE / 4, NNUI_FONT_SIZE / 2, BLACK);
+        }
 
         snprintf(buffer, sizeof(buffer), "o: %s", mat_datatype_printf());
         snprintf(buffer2, sizeof(buffer2), buffer, *__nnui__.layers[__nnui__.count - 1].neurons[i].o);
@@ -899,11 +991,10 @@ void nnui_mouse_in_net_inputs(Vector2 mousePos)
         float wheel = GetMouseWheelMove();
         if (wheel != 0) {
             __cam_net_inputs__.target.y = __cam_net_inputs__.target.y - (wheel * 2.0);
-
             if (__cam_net_inputs__.target.y < 0)
                 __cam_net_inputs__.target.y = 0;
             float max_scroll = (__nnui__.layers[0].count - 1) * (FONT_SPACE_BETWEEN + NNUI_FONT_SIZE);
-            if (max_scroll <= 6 * NNUI_FONT_SIZE)
+            if (max_scroll <= NNUI_FONT_SIZE)
                 max_scroll = 0;
             if (__cam_net_inputs__.target.y > max_scroll)
                 __cam_net_inputs__.target.y = max_scroll;
