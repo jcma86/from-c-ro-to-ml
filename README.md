@@ -12,6 +12,7 @@ If you hate the awful experience of learning ML using Jupyter notebooks, then th
 3. A Neural Network Framework [YouTube](https://youtu.be/Q6h3xWQ-TS8) / [Rumble](https://rumble.com/v2tl41o-a-neural-network-framework-from-c-ro-to-ml-episode-3.html)  
 4. UI Framework in C - Visualizing Neural Networks [YouTube](https://youtu.be/abj2caALuts) / [Rumble](https://rumble.com/v2vi6kw-raylib-for-neural-networks-visualization-in-c-from-c-ro-to-ml-episode-4.html)  
 5. Visualizing Neural Networks - Neural Networks Framework in C [YouTube](https://youtu.be/bjaQcH3MsbY) / [Rumble](https://rumble.com/v2vmvoy-visualizing-neural-networks-nn-framework-in-c-from-c-ro-to-ml-episode-5.html)  
+6. Backpropagation in C [YouTube](https://youtu.be/7m6rawXRbpU) / [Rumble](https://rumble.com/v2wtzhm-backpropagation-in-c-from-c-ro-to-ml-episode-6.html)
 
 ## Donations
 [<img src="https://vasyukov.net/upload/donate/donationalerts.png" width="30px"/>DonationAlerts](https://www.donationalerts.com/r/mokeyscode)  
