@@ -1,6 +1,8 @@
 ## From C-ro to ML
 Learning Machine Learning with C.
 
+https://github.com/jcma86/from-c-ro-to-ml/assets/8920394/aec98e6c-6698-4aad-802b-cb7c5043d821
+
 If you hate the awful experience of learning ML using Jupyter notebooks, then this might be the right place for you.
 
 <img style="float: left; margin: 3px 5px" src="https://img.uxwing.com/wp-content/themes/uxwing/download/brands-social-media/youtube-color-icon.svg" width="15px"/>[YouTube](https://www.youtube.com/@monkeyscode)  
