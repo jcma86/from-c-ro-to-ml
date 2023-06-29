@@ -113,10 +113,10 @@ void nn_update_params(NN nn, NN d);
 
 // NN Visualizer
 #ifndef NNUI_WIDTH
-#define NNUI_WIDTH 1280
+#define NNUI_WIDTH 900
 #endif
 #ifndef NNUI_HEIGHT
-#define NNUI_HEIGHT 800
+#define NNUI_HEIGHT 600
 #endif
 #ifndef NNUI_NEURON_RADIUS
 #define NNUI_NEURON_RADIUS 20

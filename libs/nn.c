@@ -501,7 +501,7 @@ Vector2 __cam_net_inputs_offset__ = (Vector2) { .x = __left_panel_width__ - (__i
 Vector2 __cam_cost_chart_offset__ = (Vector2) { .x = __left_panel_width__, .y = 0.0 };
 Vector2 __cam_learning_rate_offset__ = (Vector2) { .x = __left_panel_width__ + (3 * __padding__), .y = __chart_panel_height__ - 50 };
 Vector2 __cam_fps_offset__ = (Vector2) { .x = 5 * __padding__, .y = 3 * __padding__ };
-Vector2 __cam_example_offset__ = (Vector2) { .x = __fps_panel_width__ + (25 * __padding__), .y = 3 * __padding__ };
+Vector2 __cam_example_offset__ = (Vector2) { .x = 5 * __padding__, .y = 15 * __padding__ };
 Vector2 __cam_neuron_info_offset__ = (Vector2) { .x = __left_panel_width__, .y = __chart_panel_height__ };
 Vector2 __cam_neuron_iw_info_offset__ = (Vector2) { .x = __left_panel_width__, .y = __chart_panel_height__ + (6 * NNUI_FONT_SIZE) };
 Vector2 __cam_status_bar_offset__ = (Vector2) { .x = __padding__, .y = NNUI_HEIGHT - __padding__ - NNUI_FONT_SIZE };
@@ -1009,13 +1009,14 @@ void nnui_mouse_in_fps(Vector2 mousePos)
 
     float w = __fps_bar_width__;
     Vector2 pos = GetScreenToWorld2D(mousePos, __cam_fps__);
-    if (mousePos.x >= __cam_fps_offset__.x && mousePos.x < __cam_fps_offset__.x + w
-        && mousePos.y >= __cam_fps_offset__.y + NNUI_FONT_SIZE && mousePos.y <= __cam_fps_offset__.y + (2 * NNUI_FONT_SIZE))
-        __fps__ = (pos.x / w) * 120;
-    else if (pos.x < 0)
-        __fps__ = 0;
-    else if (pos.x > w && pos.x < __fps_panel_width__)
-        __fps__ = 120;
+    if (mousePos.y >= __cam_fps_offset__.y + NNUI_FONT_SIZE && mousePos.y <= __cam_fps_offset__.y + (2 * NNUI_FONT_SIZE)) {
+        if (mousePos.x >= __cam_fps_offset__.x && mousePos.x < __cam_fps_offset__.x + w)
+            __fps__ = (pos.x / w) * 120;
+        else if (pos.x < 0)
+            __fps__ = 0;
+        else if (pos.x > w && pos.x < __fps_panel_width__)
+            __fps__ = 120;
+    }
 
     SetTargetFPS(__fps__);
 }
@@ -1027,15 +1028,16 @@ void nnui_mouse_in_example(Vector2 mousePos)
 
     float w = __example_bar_width__;
     Vector2 pos = GetScreenToWorld2D(mousePos, __cam_example__);
-    if (mousePos.x >= __cam_example_offset__.x && mousePos.x < __cam_example_offset__.x + w
-        && mousePos.y >= __cam_example_offset__.y + NNUI_FONT_SIZE && mousePos.y <= __cam_example_offset__.y + (2 * NNUI_FONT_SIZE))
-        __current_example__ = (pos.x / w) * __n_examples__;
-    else if (pos.x < 0)
-        __current_example__ = 0;
-    else if (pos.x > w && pos.x < __example_panel_width__)
-        __current_example__ = __n_examples__;
+    if (mousePos.y >= __cam_example_offset__.y + NNUI_FONT_SIZE && mousePos.y <= __cam_example_offset__.y + (2 * NNUI_FONT_SIZE)) {
+        if (mousePos.x >= __cam_example_offset__.x && mousePos.x < __cam_example_offset__.x + w)
+            __current_example__ = (pos.x / w) * __n_examples__;
+        else if (pos.x < 0)
+            __current_example__ = 0;
+        else if (pos.x > w && pos.x < __example_panel_width__)
+            __current_example__ = __n_examples__;
 
-    SetTargetFPS(__fps__);
+        SetTargetFPS(__fps__);
+    }
 }
 
 void nnui_mouse_in_learning_rate(Vector2 mousePos)
