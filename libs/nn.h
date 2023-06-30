@@ -85,6 +85,7 @@ typedef struct {
     size_t count;
     Neuron* neurons;
     LAYER_TYPE type;
+    ActivationFx* act_fx;
 } Layer;
 
 typedef struct {

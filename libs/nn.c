@@ -599,8 +599,8 @@ void nnui_init(NN nn, size_t n_examples, int fps)
         // Defining min/max space between neurons in layer
         float y_offset = NNUI_HEIGHT / 2;
         float space_neuron = NNUI_HEIGHT / (__nnui__.layers[l].count);
-        space_neuron = min(space_neuron, 20 * NNUI_NEURON_RADIUS);
-        space_neuron = max(space_neuron, 5 * NNUI_NEURON_RADIUS);
+        space_neuron = min(space_neuron, 8 * NNUI_NEURON_RADIUS);
+        space_neuron = max(space_neuron, 3 * NNUI_NEURON_RADIUS);
         y_offset -= space_neuron * (__nnui__.layers[l].count - 1) / 2;
 
         for (size_t n = 0; n < __nnui__.layers[l].count; n++) {
@@ -775,6 +775,7 @@ void nnui_render_cost_chart()
     DrawRectangle(0, __padding__, __right_panel_width__ - __padding__, __chart_panel_height__, RAYWHITE);
     DrawRectangle(__plot_area_offset__.x, __plot_area_offset__.y, __plot_area__.x, __plot_area__.y, WHITE);
 
+    // Drawing axis
     DrawLineEx(
         (Vector2) { .x = __plot_area_offset__.x + 5, .y = __plot_area_offset__.y },
         (Vector2) { .x = __plot_area_offset__.x + 5, .y = __plot_area_offset__.y + __plot_area__.y },
@@ -798,21 +799,21 @@ void nnui_render_cost_chart()
     DrawText(buffer2, 3 * __padding__, 4 * __padding__, NNUI_FONT_SIZE, BLACK);
 
     Vector2 points[__cost_current_point__];
+    float r = __max_cost__;
+    float fr = (__plot_area__.y - 10);
     for (size_t i = 0; i < __cost_current_point__; i++) {
         float x = ((float)i / NNUI_COST_CHART_POINTS) * (__plot_area__.x - 10);
         x += __plot_area_offset__.x + 5;
 
+        // Scaling coordinates to fit in chart area
         float y = (float)__cost_points__[i];
-        points[i] = (Vector2) { .x = x, .y = y };
-    }
-
-    float fr = (__plot_area__.y - 10);
-    for (size_t i = 0; i < __cost_current_point__; i++) {
-        float r = __max_cost__;
-        points[i].y = points[i].y / r;
+        points[i] = (Vector2) { .x = x, .y = y / r };
         points[i].y *= fr;
         points[i].y = __plot_area_offset__.y + 5 + (__plot_area__.y - 10) - points[i].y;
-        DrawPixelV(points[i], RED);
+
+        // Drawing line from previous point to current
+        if (i > 0)
+            DrawLineV(points[i - 1], points[i], RED);
     }
 }
 
