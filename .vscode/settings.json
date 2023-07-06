@@ -1,5 +1,6 @@
 {
   "files.associations": {
-    "nn.h": "c"
+    "nn.h": "c",
+    "algorithm": "c"
   }
 }

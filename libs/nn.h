@@ -53,6 +53,8 @@ Mat mat_create(size_t rows, size_t cols);
 Mat mat_row(Mat m, size_t row);
 Mat mat_col(Mat m, size_t row);
 void mat_cpy(Mat dst, Mat m);
+void mat_shuffle_rows(Mat m);
+void mat_swap_rows(Mat m, size_t r1, size_t r2);
 void mat_rand(Mat m, DATA_TYPE min, DATA_TYPE max);
 void mat_set(Mat m, DATA_TYPE value);
 void mat_mult(Mat dst, Mat a, Mat b);
@@ -130,7 +132,7 @@ void nn_update_params(NN nn, NN d);
 #endif
 
 #ifndef NNUI_COST_CHART_POINTS
-#define NNUI_COST_CHART_POINTS 5000
+#define NNUI_COST_CHART_POINTS 1000
 #endif
 
 typedef struct {

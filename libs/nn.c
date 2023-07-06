@@ -117,6 +117,30 @@ void mat_cpy(Mat dst, Mat m)
     }
 }
 
+void mat_shuffle_rows(Mat m)
+{
+    assert(m.data != NULL);
+    for (size_t r1 = 1; r1 < m.rows; r1++) {
+        size_t r2 = rand() % (m.rows - r1) + r1;
+        mat_swap_rows(m, r1, r2);
+    }
+}
+
+void mat_swap_rows(Mat m, size_t r1, size_t r2)
+{
+    assert(r1 < m.rows);
+    assert(r2 < m.rows);
+
+    if (r1 == r2)
+        return;
+
+    for (size_t c = 0; c < m.cols; c++) {
+        DATA_TYPE tmp = MAT_AT(m, r1, c);
+        MAT_AT(m, r1, c) = MAT_AT(m, r2, c);
+        MAT_AT(m, r2, c) = tmp;
+    }
+}
+
 void mat_rand(Mat m, DATA_TYPE min, DATA_TYPE max)
 {
     for (size_t r = 0; r < m.rows; r++) {
@@ -546,6 +570,7 @@ void nnui_init(NN nn, size_t n_examples, int fps)
     __fps__ = __fps__ > 120 ? 0 : __fps__;
 
     SetTargetFPS(__fps__);
+    SetTraceLogLevel(LOG_NONE);
 
     snprintf(__status__, sizeof(__status__), "NN Visualizer Tool v0.1");
 
