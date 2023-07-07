@@ -99,7 +99,7 @@ typedef struct {
 
 typedef struct {
     size_t n_layers;
-    size_t* layers;
+    size_t* arch;
     DATA_TYPE* cost;
     DATA_TYPE* lr;
     Mat* w;

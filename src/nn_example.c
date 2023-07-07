@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 
 #include "../libs/nn.h"
@@ -46,15 +47,17 @@ int main()
     // DATA_TYPE eps = 0.001;
     DATA_TYPE learning_rate = 0.1;
 
-    NN nn = nn_create(layers, n_layers, learning_rate);
+    // NN nn = nn_create(layers, n_layers, learning_rate);
+    NN nn = nn_load_from_file("nn_0.00000.nn");
     NN nnd = nn_create(layers, n_layers, learning_rate);
-    nn_rand(nn, -1.0, 1.0);
+    // nn_rand(nn, -1.0, 1.0);
 
     nn_set_act_fx(nn, 2, ACTFX_SIGM);
 
     nnui_init(nn, m_in.rows, 0, false);
-    bool paused = false;
+    bool paused = true;
     size_t batch_size = 1;
+    char buffer[50];
     nnui_set_status_message(paused ? "Training paused..." : "Training!");
     while (!nnui_should_close()) {
         if (!paused) {
@@ -73,6 +76,10 @@ int main()
         if (nnui_was_key_pressed(KEY_P)) {
             paused = !paused;
             nnui_set_status_message(paused ? "Training paused..." : "Training!");
+        }
+        if (IsKeyPressed(KEY_S)) {
+            snprintf(buffer, sizeof(buffer), "nn_%.5f.nn", *nn.cost);
+            nn_save_to_file(nn, buffer);
         }
 
         if (!paused)

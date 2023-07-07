@@ -270,6 +270,10 @@ void mat_print(Mat m, char* id)
 
 void nn_destroy(NN nn)
 {
+    if (nn.arch != NULL) {
+        free(nn.arch);
+        nn.arch = NULL;
+    }
     if (nn.b != NULL) {
         for (size_t i = 0; i < nn.n_layers - 1; i++)
             mat_destroy(nn.b[i]);
@@ -307,7 +311,7 @@ NN nn_load_from_file(const char* filename)
     assert(filename != NULL);
 
     FILE* f;
-    f = fopen("./nn_0.00000.nn", "rb");
+    f = fopen(filename, "rb");
 
     char buffer[10];
     fread(buffer, sizeof(char), 10, f);
@@ -324,16 +328,17 @@ NN nn_load_from_file(const char* filename)
 
     NN nn = nn_create(layers, n_layers, 0.1);
 
+    // for (size_t l = 0; l < nn.n_layers; l++)
+    //     printf("Layer %zu: %zu vs %zu neurons\n", l, layers[l], nn.arch[l]);
+
     for (size_t l = 1; l < n_layers; l++) {
         size_t t = layers[l - 1] * layers[l];
         fread(nn.w[l - 1].data, sizeof(DATA_TYPE), t, f);
-        MAT_PRINT(nn.w[l - 1]);
     }
 
     for (size_t l = 1; l < n_layers; l++) {
         size_t t = layers[l];
         fread(nn.b[l - 1].data, sizeof(DATA_TYPE), t, f);
-        MAT_PRINT(nn.b[l - 1]);
     }
     fread(nn.act_fx, sizeof(ActivationFx), nn.n_layers - 1, f);
 
@@ -348,7 +353,10 @@ NN nn_create(size_t* layers, size_t count, DATA_TYPE learning_rate)
 
     NN nn;
     nn.n_layers = count;
-    nn.layers = layers;
+    nn.arch = malloc(sizeof(size_t) * count);
+    assert(nn.arch != NULL);
+    for (size_t l = 0; l < count; l++)
+        nn.arch[l] = layers[l];
 
     nn.w = malloc(sizeof(Mat) * (nn.n_layers - 1));
     assert(nn.w != NULL);
@@ -479,7 +487,8 @@ DATA_TYPE nn_cost(NN nn, Mat m_in, Mat m_out, size_t initial_example, size_t bat
         }
     }
 
-    return err / batch_size;
+    *nn.cost = err / batch_size;
+    return *nn.cost;
 }
 
 void nn_finite_diff(NN nn, NN nnd, Mat m_in, Mat m_out, size_t initial_example, size_t batch_size, DATA_TYPE eps)
@@ -592,7 +601,7 @@ void nn_save_to_file(NN nn, const char* filename)
 
     fwrite(buffer, sizeof(buffer), 1, file);
     fwrite(&nn.n_layers, sizeof(size_t), 1, file);
-    fwrite(nn.layers, sizeof(size_t), nn.n_layers, file);
+    fwrite(nn.arch, sizeof(size_t), nn.n_layers, file);
 
     // Writing weights
     for (size_t l = 0; l < nn.n_layers - 1; l++) {
