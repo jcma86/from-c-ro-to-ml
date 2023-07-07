@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define SIZEOF(x) (sizeof(x))
 #define TO_STR(x) #x
 #define STRINGIFY(x) TO_STR(x)
 #define max(a, b)               \
@@ -31,9 +32,15 @@
 #define MAT_AT(m, r, c) (m).data[(r) * (m).stride + (c)]
 #define MAT_PRINT(m) mat_print(m, #m)
 
+#define RELU_PARAM 0.01
+#define ELU_PARAM 0.01
 typedef enum {
     ACTFX_LINEAR,
+    ACTFX_STEP,
     ACTFX_SIGM,
+    ACTFX_TANH,
+    ACTFX_RELU,
+    ACTFX_ELU,
 } ActivationFx;
 
 // Matrix
@@ -92,6 +99,7 @@ typedef struct {
 
 typedef struct {
     size_t n_layers;
+    size_t* layers;
     DATA_TYPE* cost;
     DATA_TYPE* lr;
     Mat* w;
@@ -101,6 +109,7 @@ typedef struct {
 } NN;
 
 void nn_destroy(NN nn);
+NN nn_load_from_file(const char* filename);
 NN nn_create(size_t* layers, size_t count, DATA_TYPE learning_rate);
 void nn_set_act_fx(NN nn, size_t layer, ActivationFx fx);
 Neuron nn_get_neuron(NN nn, size_t layer, size_t n);
@@ -111,6 +120,7 @@ void nn_forward(NN nn);
 DATA_TYPE nn_cost(NN nn, Mat m_in, Mat m_out, size_t initial_example, size_t batch_size);
 void nn_finite_diff(NN nn, NN d, Mat m_in, Mat m_out, size_t initial_example, size_t batch_size, DATA_TYPE eps);
 void nn_backprop(NN nn, NN nnd, Mat m_in, Mat m_out, size_t initial_example, size_t batch_size);
+void nn_save_to_file(NN nn, const char* filename);
 
 void nn_update_params(NN nn, NN d);
 

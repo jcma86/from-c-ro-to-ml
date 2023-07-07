@@ -14,7 +14,7 @@ const char* mat_datatype_printf(void)
     return "";
 }
 
-DATA_TYPE sigmoid(DATA_TYPE x)
+DATA_TYPE fx_sigmoid(DATA_TYPE x)
 {
     if (strcmp(STRINGIFY(DATA_TYPE), "float") == 0) {
         return 1.0 / (1.0 + expf(-x));
@@ -29,13 +29,51 @@ DATA_TYPE sigmoid(DATA_TYPE x)
     return 0.0;
 }
 
+DATA_TYPE fx_tanh(DATA_TYPE x)
+{
+    if (strcmp(STRINGIFY(DATA_TYPE), "float") == 0) {
+        return (expf(x) - expf(-x)) / (expf(x) + expf(-x));
+    }
+    if (strcmp(STRINGIFY(DATA_TYPE), "double") == 0) {
+        return (exp(x) - exp(-x)) / (exp(x) + exp(-x));
+    }
+
+    printf("tanh not implemented for \"%s\"", STRINGIFY(DATA_TYPE));
+    assert(0 == 1);
+
+    return 0.0;
+}
+
+DATA_TYPE fx_elu(DATA_TYPE x)
+{
+    if (strcmp(STRINGIFY(DATA_TYPE), "float") == 0) {
+        return ELU_PARAM * (expf(x) - 1.0);
+    }
+    if (strcmp(STRINGIFY(DATA_TYPE), "double") == 0) {
+        return ELU_PARAM * (exp(x) - 1.0);
+    }
+
+    printf("tanh not implemented for \"%s\"", STRINGIFY(DATA_TYPE));
+    assert(0 == 1);
+
+    return 0.0;
+}
+
 DATA_TYPE activation_handler(DATA_TYPE x, ActivationFx act)
 {
     switch (act) {
     case ACTFX_LINEAR:
         return x;
+    case ACTFX_STEP:
+        return x < 0.0 ? 0.0 : 1.0;
     case ACTFX_SIGM:
-        return sigmoid(x);
+        return fx_sigmoid(x);
+    case ACTFX_TANH:
+        return fx_tanh(x);
+    case ACTFX_RELU:
+        return max(RELU_PARAM * x, x);
+    case ACTFX_ELU:
+        return x >= 0.0 ? x : fx_elu(x);
     }
 
     assert(0 && "Activation function not defined.");
@@ -48,8 +86,16 @@ DATA_TYPE derivative_handler(DATA_TYPE x, ActivationFx act)
     switch (act) {
     case ACTFX_LINEAR:
         return 1;
+    case ACTFX_STEP:
+        return x <= 0.0 ? 0.0 : 1.0;
     case ACTFX_SIGM:
         return x * (1 - x);
+    case ACTFX_TANH:
+        return 1.0 - (fx_tanh(x) * fx_tanh(x));
+    case ACTFX_RELU:
+        return x >= 0.0 ? 1.0 : RELU_PARAM;
+    case ACTFX_ELU:
+        return x >= 0.0 ? 1.0 : x + RELU_PARAM;
     }
 
     assert(0 && "Activation function not defined.");
@@ -256,12 +302,53 @@ void nn_destroy(NN nn)
     }
 }
 
+NN nn_load_from_file(const char* filename)
+{
+    assert(filename != NULL);
+
+    FILE* f;
+    f = fopen("./nn_0.00000.nn", "rb");
+
+    char buffer[10];
+    fread(buffer, sizeof(char), 10, f);
+    if (strcmp(buffer, STRINGIFY(DATA_TYPE)) != 0) {
+        printf("Wrong data type, expected: %s, got: %s\n", STRINGIFY(DATA_TYPE), buffer);
+        exit(1);
+    }
+
+    size_t n_layers;
+    fread(&n_layers, sizeof(size_t), 1, f);
+
+    size_t layers[n_layers];
+    fread(&layers, sizeof(size_t), n_layers, f);
+
+    NN nn = nn_create(layers, n_layers, 0.1);
+
+    for (size_t l = 1; l < n_layers; l++) {
+        size_t t = layers[l - 1] * layers[l];
+        fread(nn.w[l - 1].data, sizeof(DATA_TYPE), t, f);
+        MAT_PRINT(nn.w[l - 1]);
+    }
+
+    for (size_t l = 1; l < n_layers; l++) {
+        size_t t = layers[l];
+        fread(nn.b[l - 1].data, sizeof(DATA_TYPE), t, f);
+        MAT_PRINT(nn.b[l - 1]);
+    }
+    fread(nn.act_fx, sizeof(ActivationFx), nn.n_layers - 1, f);
+
+    fclose(f);
+
+    return nn;
+}
+
 NN nn_create(size_t* layers, size_t count, DATA_TYPE learning_rate)
 {
     assert(count > 0);
 
     NN nn;
     nn.n_layers = count;
+    nn.layers = layers;
 
     nn.w = malloc(sizeof(Mat) * (nn.n_layers - 1));
     assert(nn.w != NULL);
@@ -492,8 +579,41 @@ void nn_update_params(NN nn, NN nnd)
     }
 }
 
+void nn_save_to_file(NN nn, const char* filename)
+{
+    assert(filename != NULL);
+
+    FILE* file = fopen(filename, "wb");
+    assert(file != NULL);
+
+    printf("Saving to file %s\n", filename);
+    char buffer[10];
+    snprintf(buffer, sizeof(buffer), "%s", STRINGIFY(DATA_TYPE));
+
+    fwrite(buffer, sizeof(buffer), 1, file);
+    fwrite(&nn.n_layers, sizeof(size_t), 1, file);
+    fwrite(nn.layers, sizeof(size_t), nn.n_layers, file);
+
+    // Writing weights
+    for (size_t l = 0; l < nn.n_layers - 1; l++) {
+        size_t t = nn.w[l].rows * nn.w[l].cols;
+        fwrite(nn.w[l].data, sizeof(DATA_TYPE), t, file);
+    }
+
+    // Writing bias
+    for (size_t l = 0; l < nn.n_layers - 1; l++)
+        fwrite(nn.b[l].data, sizeof(DATA_TYPE), nn.b[l].cols, file);
+
+    // Writing Act Fxs.
+    fwrite(nn.act_fx, sizeof(ActivationFx), nn.n_layers - 1, file);
+
+    fclose(file);
+    printf("File saved\n");
+}
+
 // NN Visualizer
-void (*test_area_render)(NN*, void*) = NULL;
+void (*test_area_render)(NN*, void*)
+    = NULL;
 char __nnui_ready__ = 0;
 int __fps__ = 15;
 char __status__[256];
@@ -696,7 +816,7 @@ void nnui_render_graph(Vector2 mouse_pos)
                 if (l == 0)
                     DrawRectangle(p.x - NNUI_NEURON_RADIUS, p.y - NNUI_NEURON_RADIUS, 2 * NNUI_NEURON_RADIUS, 2 * NNUI_NEURON_RADIUS, GRAY);
                 else {
-                    float h = sigmoid(*(__nnui__.layers[l].neurons[n].o)) * 180.0f;
+                    float h = fx_sigmoid(*(__nnui__.layers[l].neurons[n].o)) * 180.0f;
                     h -= 60.0f;
                     if (h < 0.0)
                         h = 360.0 - h;
@@ -721,7 +841,7 @@ void nnui_render_graph(Vector2 mouse_pos)
                 for (size_t i = 0; i < __nnui__.layers[l - 1].count; i++) {
                     Vector2 pn = __nnui__.ui[l - 1].coords[i];
                     pn.x += NNUI_NEURON_RADIUS;
-                    float h = sigmoid(MAT_AT(__nnui__.layers[l].neurons[n].w, i, 0)) * 180.0f;
+                    float h = fx_sigmoid(MAT_AT(__nnui__.layers[l].neurons[n].w, i, 0)) * 180.0f;
                     h -= 60.0f;
                     if (h < 0.0)
                         h = 360.0 - h;
