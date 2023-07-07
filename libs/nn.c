@@ -420,14 +420,15 @@ void nn_finite_diff(NN nn, NN nnd, Mat m_in, Mat m_out, size_t initial_example, 
         }
     }
 
-    *nn.cost = cc;
+    // *nn.cost = cc;
 }
 
 void nn_backprop(NN nn, NN nnd, Mat m_in, Mat m_out, size_t initial_example, size_t batch_size)
 {
     nn_zero(nnd);
-    DATA_TYPE cost = 0.0;
-    for (size_t i = initial_example; i < (initial_example + batch_size); i++) {
+    // DATA_TYPE cost = 0.0;
+    size_t lim = min(initial_example + batch_size, m_in.rows);
+    for (size_t i = initial_example; i < lim; i++) {
         mat_cpy(NN_INPUT(nn), mat_row(m_in, i));
         nn_forward(nn);
 
@@ -437,7 +438,7 @@ void nn_backprop(NN nn, NN nnd, Mat m_in, Mat m_out, size_t initial_example, siz
         for (size_t j = 0; j < m_out.cols; j++) {
             DATA_TYPE dif = MAT_AT(NN_OUTPUT(nn), 0, j) - MAT_AT(m_out, i, j);
             MAT_AT(NN_OUTPUT(nnd), 0, j) = 2 * (dif);
-            cost += dif * dif;
+            // cost += dif * dif;
         }
 
         for (size_t l = nn.n_layers - 1; l > 0; l--) {
@@ -471,7 +472,7 @@ void nn_backprop(NN nn, NN nnd, Mat m_in, Mat m_out, size_t initial_example, siz
         }
     }
 
-    *nn.cost = cost / batch_size;
+    // *nn.cost = cost / batch_size;
 }
 
 void nn_update_params(NN nn, NN nnd)
@@ -492,11 +493,15 @@ void nn_update_params(NN nn, NN nnd)
 }
 
 // NN Visualizer
+void (*test_area_render)(NN*, void*) = NULL;
 char __nnui_ready__ = 0;
 int __fps__ = 15;
 char __status__[256];
 size_t __current_example__ = 0;
 size_t __n_examples__ = 0;
+NN* __nn__ = NULL;
+void* __param__ = NULL;
+bool __draw_test__ = false;
 
 Camera2D __cam_main__ = { 0 };
 Camera2D __cam_graph__ = { 0 };
@@ -508,6 +513,7 @@ Camera2D __cam_example__ = { 0 };
 Camera2D __cam_neuron_info__ = { 0 };
 Camera2D __cam_neuron_iw_info__ = { 0 };
 Camera2D __cam_status_bar__ = { 0 };
+Camera2D __cam_test_area__ = { 0 };
 
 const int __padding__ = 5;
 const int __right_panel_width__ = 350;
@@ -529,6 +535,7 @@ Vector2 __cam_example_offset__ = (Vector2) { .x = 5 * __padding__, .y = 15 * __p
 Vector2 __cam_neuron_info_offset__ = (Vector2) { .x = __left_panel_width__, .y = __chart_panel_height__ };
 Vector2 __cam_neuron_iw_info_offset__ = (Vector2) { .x = __left_panel_width__, .y = __chart_panel_height__ + (6 * NNUI_FONT_SIZE) };
 Vector2 __cam_status_bar_offset__ = (Vector2) { .x = __padding__, .y = NNUI_HEIGHT - __padding__ - NNUI_FONT_SIZE };
+Vector2 __cam_test_area_offset__ = (Vector2) { .x = NNUI_WIDTH, .y = 0 };
 
 DATA_TYPE __cost_points__[NNUI_COST_CHART_POINTS];
 float __max_cost__ = -INT32_MAX;
@@ -562,12 +569,18 @@ size_t nnui_get_current_example()
     return __current_example__;
 }
 
-void nnui_init(NN nn, size_t n_examples, int fps)
+void nnui_init(NN nn, size_t n_examples, int fps, bool draw_test_area)
 {
-    InitWindow(NNUI_WIDTH, NNUI_HEIGHT, "Neural Network Visualizer");
+    __draw_test__ = draw_test_area;
+    if (draw_test_area)
+        InitWindow(NNUI_WIDTH + NNUI_TEST_AREA_WIDTH, NNUI_HEIGHT, "Neural Network Visualizer");
+    else
+        InitWindow(NNUI_WIDTH, NNUI_HEIGHT, "Neural Network Visualizer");
+
     __n_examples__ = n_examples - 1;
     __fps__ = max(fps, 0);
     __fps__ = __fps__ > 120 ? 0 : __fps__;
+    __nn__ = &nn;
 
     SetTargetFPS(__fps__);
     SetTraceLogLevel(LOG_NONE);
@@ -584,6 +597,7 @@ void nnui_init(NN nn, size_t n_examples, int fps)
     __cam_neuron_info__.offset = __cam_neuron_info_offset__;
     __cam_neuron_iw_info__.offset = __cam_neuron_iw_info_offset__;
     __cam_status_bar__.offset = __cam_status_bar_offset__;
+    __cam_test_area__.offset = __cam_test_area_offset__;
 
     __cam_main__.zoom = 1.0f;
     __cam_graph__.zoom = 1.0f;
@@ -595,6 +609,7 @@ void nnui_init(NN nn, size_t n_examples, int fps)
     __cam_neuron_info__.zoom = 1.0f;
     __cam_neuron_iw_info__.zoom = 1.0f;
     __cam_status_bar__.zoom = 1.0f;
+    __cam_test_area__.zoom = 1.0f;
 
     __nnui__.count = nn.n_layers;
     __nnui__.lr = nn.lr;
@@ -635,6 +650,17 @@ void nnui_init(NN nn, size_t n_examples, int fps)
     }
 
     __nnui_ready__ = 1;
+}
+
+void nnui_set_test_area_render(void (*ptr_render)(NN*, void*))
+{
+    test_area_render = ptr_render;
+}
+
+void nnui_render_test_area()
+{
+    if (test_area_render)
+        test_area_render(__nn__, __param__);
 }
 
 void nnui_render_graph(Vector2 mouse_pos)
@@ -1098,7 +1124,8 @@ void nnui_render()
         mousePos = (Vector2) { .x = 0, .y = 0 };
 
     BeginDrawing();
-    ClearBackground(LIGHTGRAY);
+    // ClearBackground(LIGHTGRAY);
+    DrawRectangle(0, 0, NNUI_WIDTH, NNUI_HEIGHT, LIGHTGRAY);
 
     DrawRectangle(__padding__, __padding__, NNUI_WIDTH - (2 * __padding__), NNUI_HEIGHT - (2 * __padding__), (Color) { 45, 45, 45, 255 });
 
@@ -1162,5 +1189,10 @@ void nnui_render()
     DrawRectangle(__left_panel_width__ - (__padding__ / 2), 0, __padding__, NNUI_HEIGHT, LIGHTGRAY);
     DrawRectangle(__left_panel_width__, __chart_panel_height__ - (__padding__ / 2), __right_panel_width__, __padding__, LIGHTGRAY);
 
+    if (__draw_test__) {
+        BeginMode2D(__cam_test_area__);
+        nnui_render_test_area();
+        EndMode2D();
+    }
     EndDrawing();
 }

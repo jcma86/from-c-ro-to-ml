@@ -84,7 +84,7 @@ int main(void)
     NN dnn = nn_create(layers, n_layers, learning_rate);
     nn_rand(nn, -1.0, 1.0);
 
-    nnui_init(nn, m_in.rows, 0);
+    nnui_init(nn, m_in.rows, 0, false);
     bool paused = false;
     size_t batch_size = 1;
     nnui_set_status_message(paused ? "Training paused..." : "Training!");

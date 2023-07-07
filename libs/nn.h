@@ -116,10 +116,13 @@ void nn_update_params(NN nn, NN d);
 
 // NN Visualizer
 #ifndef NNUI_WIDTH
-#define NNUI_WIDTH 900
+#define NNUI_WIDTH 700
 #endif
 #ifndef NNUI_HEIGHT
-#define NNUI_HEIGHT 600
+#define NNUI_HEIGHT 520
+#endif
+#ifndef NNUI_TEST_AREA_WIDTH
+#define NNUI_TEST_AREA_WIDTH 250
 #endif
 #ifndef NNUI_NEURON_RADIUS
 #define NNUI_NEURON_RADIUS 20
@@ -149,7 +152,8 @@ typedef struct {
 bool nnui_should_close();
 size_t nnui_get_current_example();
 void nnui_end();
-void nnui_init(NN nn, size_t n_examples, int fps);
+void nnui_init(NN nn, size_t n_examples, int fps, bool draw_test_area);
+void nnui_set_test_area_render(void (*ptr_render)(NN*, void*));
 void nnui_render();
 void nnui_reset_cam();
 void nnui_add_point_to_chart(DATA_TYPE point);
