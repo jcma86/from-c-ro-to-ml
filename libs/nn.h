@@ -126,10 +126,10 @@ void nn_update_params(NN nn, NN d);
 
 // NN Visualizer
 #ifndef NNUI_WIDTH
-#define NNUI_WIDTH 700
+#define NNUI_WIDTH 900
 #endif
 #ifndef NNUI_HEIGHT
-#define NNUI_HEIGHT 520
+#define NNUI_HEIGHT 620
 #endif
 #ifndef NNUI_TEST_AREA_WIDTH
 #define NNUI_TEST_AREA_WIDTH 250

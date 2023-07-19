@@ -1081,6 +1081,8 @@ void nnui_render_neuron_iw_info()
             snprintf(buffer2, sizeof(buffer2), buffer, *(__nnui__.layers[__selected_neuron__.layer - 1].neurons[n].o));
             DrawText(buffer2, NNUI_FONT_SIZE * 2, y, NNUI_FONT_SIZE, BLACK);
 
+            MAT_PRINT(__selected_neuron__.w);
+
             snprintf(buffer, sizeof(buffer), "w: %s\n", mat_datatype_printf());
             snprintf(buffer2, sizeof(buffer2), buffer, MAT_AT(__selected_neuron__.w, n, 0));
             DrawText(buffer2, __right_panel_width__ / 2, y, NNUI_FONT_SIZE, BLACK);

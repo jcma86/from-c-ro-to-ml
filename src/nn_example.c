@@ -10,11 +10,11 @@ int main()
     srand(time(0));
     randv();
 
-    DATA_TYPE training_data[4][6] = {
-        { 0, 0, 0, 0, 1, 0 },
-        { 0, 1, 1, 0, 1, 1 },
-        { 1, 0, 1, 0, 1, 1 },
-        { 1, 1, 1, 1, 0, 0 },
+    DATA_TYPE training_data[4][3] = {
+        { 0, 0, 0 },
+        { 0, 1, 1 },
+        { 1, 0, 1 },
+        { 1, 1, 0 },
     }; // inA, inB, -> or, and, nand, xor
 
     Mat m_gates; // = mat_create(4, 3);
@@ -42,17 +42,17 @@ int main()
     MAT_PRINT(m_in);
     MAT_PRINT(m_out);
 
-    size_t layers[] = { m_in.cols, 7, 3, m_out.cols };
+    size_t layers[] = { m_in.cols, 2, m_out.cols };
     size_t n_layers = ARRAY_SIZE(layers);
     // DATA_TYPE eps = 0.001;
     DATA_TYPE learning_rate = 0.1;
 
-    // NN nn = nn_create(layers, n_layers, learning_rate);
-    NN nn = nn_load_from_file("nn_0.00000.nn");
+    NN nn = nn_create(layers, n_layers, learning_rate);
+    // NN nn = nn_load_from_file("nn_0.00000.nn");
     NN nnd = nn_create(layers, n_layers, learning_rate);
-    // nn_rand(nn, -1.0, 1.0);
+    nn_rand(nn, -1.0, 1.0);
 
-    nn_set_act_fx(nn, 2, ACTFX_SIGM);
+    // nn_set_act_fx(nn, 2, ACTFX_SIGM);
 
     nnui_init(nn, m_in.rows, 0, false);
     bool paused = true;
@@ -62,12 +62,12 @@ int main()
     while (!nnui_should_close()) {
         if (!paused) {
             for (size_t ex = 0; ex < m_in.rows; ex += batch_size) {
-                // nn_finite_diff(nn, nnd, m_in, m_out, ex, batch_size, eps);
                 nn_backprop(nn, nnd, m_in, m_out, ex, batch_size);
                 nn_update_params(nn, nnd);
             }
         }
 
+        *nn.cost = nn_cost(nn, m_in, m_out, 0, m_in.rows);
         mat_cpy(NN_INPUT(nn), mat_row(m_in, nnui_get_current_example()));
         nn_forward(nn);
         nnui_render();

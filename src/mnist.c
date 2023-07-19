@@ -76,7 +76,7 @@ int main(void)
     //     printf("\n");
     // }
 
-    size_t layers[] = { m_in.cols, 7, m_out.cols };
+    size_t layers[] = { m_in.cols, 8, m_out.cols };
     size_t n_layers = ARRAY_SIZE(layers);
     DATA_TYPE learning_rate = 0.5;
 
@@ -85,8 +85,8 @@ int main(void)
     nn_rand(nn, -1.0, 1.0);
 
     nnui_init(nn, m_in.rows, 0, false);
-    bool paused = false;
-    size_t batch_size = 1;
+    bool paused = true;
+    size_t batch_size = 100;
     nnui_set_status_message(paused ? "Training paused..." : "Training!");
 
     size_t sample = 0;
@@ -119,6 +119,7 @@ int main(void)
 
         mat_cpy(NN_INPUT(nn), mat_row(m_in, sample));
         nn_forward(nn);
+        *nn.cost = nn_cost(nn, m_in, m_out, 0, m_in.rows);
         nnui_render();
 
         if (nnui_was_key_pressed(KEY_R))
